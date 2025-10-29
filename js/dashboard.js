@@ -1,6 +1,6 @@
 // Global variables
 let chartsInitialized = false;
-let coverageChart, qualityChart;
+let coverageBarChart, vulnerabilitiesBarChart;
 
 /**
  * Format numbers with K/M suffixes
@@ -45,123 +45,91 @@ function createCoverageBar(coverage) {
 }
 
 /**
- * Initialize charts using Chart.js
+ * Initialize ApexCharts bar charts for coverage and vulnerabilities
  */
 function initializeCharts(data) {
     if (chartsInitialized) return;
 
     const projects = data.projects || [];
-    
-    // Coverage Distribution Chart
-    const coverageRanges = {
-        'Excellent (80%+)': 0,
-        'Good (60-79%)': 0,
-        'Fair (40-59%)': 0,
-        'Poor (20-39%)': 0,
-        'Critical (<20%)': 0,
-        'No Data': 0
+    const projectNames = projects.map(p => p.key);
+    const coverageData = projects.map(p => p.coverage !== null && p.coverage !== undefined ? p.coverage : 0);
+    const vulnerabilitiesData = projects.map(p => p.vulnerabilities !== null && p.vulnerabilities !== undefined ? p.vulnerabilities : 0);
+
+    // Coverage Bar Chart
+    var coverageOptions = {
+        chart: {
+            type: 'bar',
+            height: 300,
+            toolbar: { show: false }
+        },
+        series: [{
+            name: 'Coverage (%)',
+            data: coverageData
+        }],
+        xaxis: {
+            categories: projectNames,
+            labels: { rotate: -45 }
+        },
+        colors: ['#8456ea'],
+        plotOptions: {
+            bar: {
+                borderRadius: 4,
+                horizontal: false,
+                columnWidth: '50%'
+            }
+        },
+        dataLabels: {
+            enabled: true,
+            formatter: function (val) { return val ? val.toFixed(1) + '%' : 'N/A'; }
+        },
+        yaxis: {
+            min: 0,
+            max: 100,
+            title: { text: 'Coverage (%)' }
+        },
+        grid: { borderColor: '#f3f1f7' },
+        background: '#faf9fc',
+        tooltip: { y: { formatter: val => val + '%' } }
     };
+    coverageBarChart = new ApexCharts(document.querySelector("#coverage-bar-chart"), coverageOptions);
+    coverageBarChart.render();
 
-    projects.forEach(project => {
-        const coverage = project.coverage;
-        if (coverage === null || coverage === undefined) {
-            coverageRanges['No Data']++;
-        } else if (coverage >= 80) {
-            coverageRanges['Excellent (80%+)']++;
-        } else if (coverage >= 60) {
-            coverageRanges['Good (60-79%)']++;
-        } else if (coverage >= 40) {
-            coverageRanges['Fair (40-59%)']++;
-        } else if (coverage >= 20) {
-            coverageRanges['Poor (20-39%)']++;
-        } else {
-            coverageRanges['Critical (<20%)']++;
-        }
-    });
-
-    const ctx1 = document.getElementById('coverageChart').getContext('2d');
-    coverageChart = new Chart(ctx1, {
-        type: 'doughnut',
-        data: {
-            labels: Object.keys(coverageRanges),
-            datasets: [{
-                data: Object.values(coverageRanges),
-                backgroundColor: [
-                    '#4CAF50',
-                    '#8BC34A',
-                    '#FFC107',
-                    '#FF9800',
-                    '#F44336',
-                    '#9E9E9E'
-                ],
-                borderWidth: 2,
-                borderColor: '#fff'
-            }]
+    // Vulnerabilities Bar Chart
+    var vulnerabilitiesOptions = {
+        chart: {
+            type: 'bar',
+            height: 300,
+            toolbar: { show: false }
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        padding: 15,
-                        usePointStyle: true
-                    }
-                }
-            }
-        }
-    });
-
-    // Quality Overview Chart (Top 10 projects by issues)
-    const projectsWithIssues = projects
-        .map(p => ({
-            key: p.key,
-            totalIssues: (p.bugs || 0) + (p.vulnerabilities || 0) + (p.code_smells || 0)
-        }))
-        .sort((a, b) => b.totalIssues - a.totalIssues)
-        .slice(0, 10);
-
-    const ctx2 = document.getElementById('qualityChart').getContext('2d');
-    qualityChart = new Chart(ctx2, {
-        type: 'bar',
-        data: {
-            labels: projectsWithIssues.map(p => p.key.length > 20 ? p.key.substring(0, 20) + '...' : p.key),
-            datasets: [{
-                label: 'Total Issues',
-                data: projectsWithIssues.map(p => p.totalIssues),
-                backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
-            }]
+        series: [{
+            name: 'Vulnerabilities',
+            data: vulnerabilitiesData
+        }],
+        xaxis: {
+            categories: projectNames,
+            labels: { rotate: -45 }
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        precision: 0
-                    }
-                },
-                x: {
-                    ticks: {
-                        maxRotation: 45
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    display: false
-                },
-                title: {
-                    display: true,
-                    text: 'Top 10 Projects by Total Issues'
-                }
+        colors: ['#f44336'],
+        plotOptions: {
+            bar: {
+                borderRadius: 4,
+                horizontal: false,
+                columnWidth: '50%'
             }
-        }
-    });
+        },
+        dataLabels: {
+            enabled: true
+        },
+        yaxis: {
+            min: 0,
+            title: { text: 'Vulnerabilities' }
+        },
+        grid: { borderColor: '#f3f1f7' },
+        background: '#faf9fc',
+        tooltip: { y: { formatter: val => val } }
+    };
+    vulnerabilitiesBarChart = new ApexCharts(document.querySelector("#vulnerabilities-bar-chart"), vulnerabilitiesOptions);
+    vulnerabilitiesBarChart.render();
 
     chartsInitialized = true;
 }

@@ -6,7 +6,7 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #faf9fc;
     min-height: 100vh;
     color: #333;
 }
@@ -76,11 +76,11 @@ body {
 }
 
 .metric-value.coverage {
-    color: #4CAF50;
+    color: #8456ea;
 }
 
 .metric-value.global-coverage {
-    color: #2196F3;
+    color: #8456ea;
 }
 
 .metric-value.vulnerabilities {
@@ -92,7 +92,7 @@ body {
 }
 
 .metric-value.code-smells {
-    color: #9C27B0;
+    color: #8456ea;
 }
 
 .chart-container {
@@ -144,9 +144,9 @@ th, td {
 }
 
 th {
-    background: #f8f9fa;
+    background: #f3f1f7;
     font-weight: 600;
-    color: #666;
+    color: #8456ea;
     text-transform: uppercase;
     font-size: 0.85rem;
     letter-spacing: 0.5px;
@@ -173,10 +173,10 @@ tr:hover {
     transition: width 0.3s ease;
 }
 
-.coverage-excellent { background: #4CAF50; }
-.coverage-good { background: #8BC34A; }
-.coverage-fair { background: #FFC107; }
-.coverage-poor { background: #FF9800; }
+.coverage-excellent { background: #8456ea; }
+.coverage-good { background: #a18aff; }
+.coverage-fair { background: #cbb6ff; }
+.coverage-poor { background: #ffb347; }
 .coverage-bad { background: #F44336; }
 
 .loading {
@@ -196,7 +196,7 @@ tr:hover {
 }
 
 .success {
-    background: #4CAF50;
+    background: #8456ea;
     color: white;
     padding: 20px;
     border-radius: 10px;
