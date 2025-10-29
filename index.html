@@ -6,7 +6,7 @@
     <title>SonarQube Metrics Dashboard</title>
     
     <!-- External Dependencies -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     
     <!-- Custom Styles -->
     <link rel="stylesheet" href="css/dashboard.css">
@@ -58,14 +58,15 @@
                 </div>
             </div>
 
+
             <div class="chart-container">
-                <div class="chart-title">Code Coverage Distribution</div>
-                <canvas id="coverageChart" width="400" height="200"></canvas>
+                <div class="chart-title">Coverage por Projeto</div>
+                <div id="coverage-bar-chart"></div>
             </div>
 
             <div class="chart-container">
-                <div class="chart-title">Project Quality Overview</div>
-                <canvas id="qualityChart" width="400" height="200"></canvas>
+                <div class="chart-title">Vulnerabilidades por Projeto</div>
+                <div id="vulnerabilities-bar-chart"></div>
             </div>
 
             <div class="project-table">
