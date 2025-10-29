@@ -264,6 +264,11 @@ jobs:
           git add data/latest-metrics.json
           git diff --quiet && git diff --staged --quiet || git commit -m "Update SonarQube metrics - $(date +'%Y-%m-%d %H:%M')"
           git push
+          
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: .
 
   deploy:
     needs: update-metrics
