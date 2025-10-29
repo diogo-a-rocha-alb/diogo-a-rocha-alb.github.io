@@ -1,0 +1,283 @@
+name: Update SonarQube Metrics Dashboard
+
+on:
+  schedule:
+    - cron: '0 7 * * *'  # Daily at 7 AM UTC
+  workflow_dispatch:      # Allow manual triggering
+
+jobs:
+  update-metrics:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Install jq for JSON processing
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq bc
+          
+      - name: Create data directory
+        run: mkdir -p data
+          
+      - name: Fetch SonarQube projects and metrics
+        run: |
+          echo "🔍 Fetching projects from SonarQube..."
+          
+          # Initialize variables
+          SONAR_URL="${{ secrets.SONAR_HOST_URL }}"
+          SONAR_TOKEN="${{ secrets.SONAR_TOKEN }}"
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          
+          # Create temporary files
+          PROJECTS_FILE=$(mktemp)
+          METRICS_FILE=$(mktemp)
+          
+          # Fetch all projects (with pagination)
+          PAGE=1
+          ALL_PROJECTS="[]"
+          
+          while true; do
+            echo "📄 Fetching projects page $PAGE..."
+            
+            RESPONSE=$(curl -s -u "$SONAR_TOKEN:" \
+              "$SONAR_URL/api/projects/search?p=$PAGE&ps=500" \
+              --insecure || echo '{"components":[]}')
+            
+            PROJECTS=$(echo "$RESPONSE" | jq -r '.components // []')
+            
+            if [ "$(echo "$PROJECTS" | jq 'length')" -eq 0 ]; then
+              break
+            fi
+            
+            ALL_PROJECTS=$(echo "$ALL_PROJECTS $PROJECTS" | jq -s 'add')
+            
+            # Check if we have more pages
+            TOTAL=$(echo "$RESPONSE" | jq -r '.paging.total // 0')
+            CURRENT_COUNT=$(echo "$ALL_PROJECTS" | jq 'length')
+            
+            if [ "$CURRENT_COUNT" -ge "$TOTAL" ]; then
+              break
+            fi
+            
+            PAGE=$((PAGE + 1))
+          done
+          
+          echo "$ALL_PROJECTS" > "$PROJECTS_FILE"
+          PROJECT_COUNT=$(echo "$ALL_PROJECTS" | jq 'length')
+          echo "✅ Found $PROJECT_COUNT projects"
+          
+          # Initialize metrics collection
+          echo "[]" > "$METRICS_FILE"
+          
+          # Counters for summary
+          TOTAL_BUGS=0
+          TOTAL_VULNERABILITIES=0
+          TOTAL_CODE_SMELLS=0
+          TOTAL_NCLOC=0
+          TOTAL_LINES_TO_COVER=0
+          TOTAL_COVERED_LINES=0
+          COVERAGE_COUNT=0
+          COVERAGE_SUM=0
+          
+          # Process each project
+          echo "$ALL_PROJECTS" | jq -r '.[].key' | while read -r PROJECT_KEY; do
+            if [ -n "$PROJECT_KEY" ]; then
+              echo "📊 Processing project: $PROJECT_KEY"
+              
+              # Fetch metrics for this project
+              METRICS_RESPONSE=$(curl -s -u "$SONAR_TOKEN:" \
+                "$SONAR_URL/api/measures/component?component=$PROJECT_KEY&metricKeys=coverage,ncloc,bugs,vulnerabilities,code_smells,lines_to_cover,uncovered_lines" \
+                --insecure || echo '{"component":{"measures":[]}}')
+              
+              # Extract individual metrics
+              COVERAGE=$(echo "$METRICS_RESPONSE" | jq -r '.component.measures[] | select(.metric=="coverage") | .value // null')
+              NCLOC=$(echo "$METRICS_RESPONSE" | jq -r '.component.measures[] | select(.metric=="ncloc") | .value // "0"')
+              BUGS=$(echo "$METRICS_RESPONSE" | jq -r '.component.measures[] | select(.metric=="bugs") | .value // "0"')
+              VULNERABILITIES=$(echo "$METRICS_RESPONSE" | jq -r '.component.measures[] | select(.metric=="vulnerabilities") | .value // "0"')
+              CODE_SMELLS=$(echo "$METRICS_RESPONSE" | jq -r '.component.measures[] | select(.metric=="code_smells") | .value // "0"')
+              LINES_TO_COVER=$(echo "$METRICS_RESPONSE" | jq -r '.component.measures[] | select(.metric=="lines_to_cover") | .value // "0"')
+              UNCOVERED_LINES=$(echo "$METRICS_RESPONSE" | jq -r '.component.measures[] | select(.metric=="uncovered_lines") | .value // "0"')
+              
+              # Convert null/empty to proper values
+              [ "$COVERAGE" = "null" ] && COVERAGE="null"
+              [ "$NCLOC" = "" ] && NCLOC="0"
+              [ "$BUGS" = "" ] && BUGS="0"
+              [ "$VULNERABILITIES" = "" ] && VULNERABILITIES="0"
+              [ "$CODE_SMELLS" = "" ] && CODE_SMELLS="0"
+              [ "$LINES_TO_COVER" = "" ] && LINES_TO_COVER="0"
+              [ "$UNCOVERED_LINES" = "" ] && UNCOVERED_LINES="0"
+              
+              # Create project object
+              if [ "$COVERAGE" = "null" ]; then
+                PROJECT_JSON=$(jq -n \
+                  --arg key "$PROJECT_KEY" \
+                  --argjson ncloc "$NCLOC" \
+                  --argjson bugs "$BUGS" \
+                  --argjson vulnerabilities "$VULNERABILITIES" \
+                  --argjson code_smells "$CODE_SMELLS" \
+                  '{
+                    key: $key,
+                    coverage: null,
+                    ncloc: $ncloc,
+                    bugs: $bugs,
+                    vulnerabilities: $vulnerabilities,
+                    code_smells: $code_smells
+                  }')
+              else
+                PROJECT_JSON=$(jq -n \
+                  --arg key "$PROJECT_KEY" \
+                  --argjson coverage "$COVERAGE" \
+                  --argjson ncloc "$NCLOC" \
+                  --argjson bugs "$BUGS" \
+                  --argjson vulnerabilities "$VULNERABILITIES" \
+                  --argjson code_smells "$CODE_SMELLS" \
+                  '{
+                    key: $key,
+                    coverage: $coverage,
+                    ncloc: $ncloc,
+                    bugs: $bugs,
+                    vulnerabilities: $vulnerabilities,
+                    code_smells: $code_smells
+                  }')
+                
+                # Add to coverage calculation if available
+                COVERAGE_SUM=$(echo "$COVERAGE_SUM + $COVERAGE" | bc -l)
+                COVERAGE_COUNT=$((COVERAGE_COUNT + 1))
+              fi
+              
+              # Update running totals
+              TOTAL_BUGS=$(echo "$TOTAL_BUGS + $BUGS" | bc)
+              TOTAL_VULNERABILITIES=$(echo "$TOTAL_VULNERABILITIES + $VULNERABILITIES" | bc)
+              TOTAL_CODE_SMELLS=$(echo "$TOTAL_CODE_SMELLS + $CODE_SMELLS" | bc)
+              TOTAL_NCLOC=$(echo "$TOTAL_NCLOC + $NCLOC" | bc)
+              
+              # Update global coverage calculation
+              if [ "$LINES_TO_COVER" != "0" ]; then
+                COVERED_LINES=$(echo "$LINES_TO_COVER - $UNCOVERED_LINES" | bc)
+                TOTAL_LINES_TO_COVER=$(echo "$TOTAL_LINES_TO_COVER + $LINES_TO_COVER" | bc)
+                TOTAL_COVERED_LINES=$(echo "$TOTAL_COVERED_LINES + $COVERED_LINES" | bc)
+              fi
+              
+              # Add to metrics file
+              CURRENT_METRICS=$(cat "$METRICS_FILE")
+              echo "$CURRENT_METRICS" | jq ". + [$PROJECT_JSON]" > "$METRICS_FILE"
+              
+              echo "   ✓ Coverage: $COVERAGE, NCLOC: $NCLOC, Bugs: $BUGS"
+            fi
+          done
+          
+          # Calculate final metrics
+          if [ "$COVERAGE_COUNT" -gt 0 ]; then
+            AVERAGE_COVERAGE=$(echo "scale=2; $COVERAGE_SUM / $COVERAGE_COUNT" | bc -l)
+          else
+            AVERAGE_COVERAGE="null"
+          fi
+          
+          if [ "$TOTAL_LINES_TO_COVER" != "0" ]; then
+            GLOBAL_COVERAGE=$(echo "scale=2; ($TOTAL_COVERED_LINES / $TOTAL_LINES_TO_COVER) * 100" | bc -l)
+          else
+            GLOBAL_COVERAGE="null"
+          fi
+          
+          # Read the final metrics
+          FINAL_PROJECTS=$(cat "$METRICS_FILE")
+          
+          # Create final JSON structure
+          if [ "$AVERAGE_COVERAGE" = "null" ] && [ "$GLOBAL_COVERAGE" = "null" ]; then
+            FINAL_JSON=$(jq -n \
+              --arg timestamp "$TIMESTAMP" \
+              --argjson total_projects "$PROJECT_COUNT" \
+              --argjson total_vulnerabilities "$TOTAL_VULNERABILITIES" \
+              --argjson total_bugs "$TOTAL_BUGS" \
+              --argjson total_code_smells "$TOTAL_CODE_SMELLS" \
+              --argjson total_lines_of_code "$TOTAL_NCLOC" \
+              --argjson projects "$FINAL_PROJECTS" \
+              '{
+                timestamp: $timestamp,
+                summary: {
+                  total_projects: $total_projects,
+                  global_coverage: null,
+                  average_coverage: null,
+                  total_vulnerabilities: $total_vulnerabilities,
+                  total_bugs: $total_bugs,
+                  total_code_smells: $total_code_smells,
+                  total_lines_of_code: $total_lines_of_code
+                },
+                projects: $projects
+              }')
+          else
+            FINAL_JSON=$(jq -n \
+              --arg timestamp "$TIMESTAMP" \
+              --argjson total_projects "$PROJECT_COUNT" \
+              --argjson global_coverage "$GLOBAL_COVERAGE" \
+              --argjson average_coverage "$AVERAGE_COVERAGE" \
+              --argjson total_vulnerabilities "$TOTAL_VULNERABILITIES" \
+              --argjson total_bugs "$TOTAL_BUGS" \
+              --argjson total_code_smells "$TOTAL_CODE_SMELLS" \
+              --argjson total_lines_of_code "$TOTAL_NCLOC" \
+              --argjson projects "$FINAL_PROJECTS" \
+              '{
+                timestamp: $timestamp,
+                summary: {
+                  total_projects: $total_projects,
+                  global_coverage: $global_coverage,
+                  average_coverage: $average_coverage,
+                  total_vulnerabilities: $total_vulnerabilities,
+                  total_bugs: $total_bugs,
+                  total_code_smells: $total_code_smells,
+                  total_lines_of_code: $total_lines_of_code
+                },
+                projects: $projects
+              }')
+          fi
+          
+          # Save final JSON
+          echo "$FINAL_JSON" > data/latest-metrics.json
+          
+          # Cleanup
+          rm -f "$PROJECTS_FILE" "$METRICS_FILE"
+          
+          # Summary
+          echo ""
+          echo "📊 === SUMMARY ==="
+          echo "Projects processed: $PROJECT_COUNT"
+          echo "Global coverage: $GLOBAL_COVERAGE%"
+          echo "Average coverage: $AVERAGE_COVERAGE%"
+          echo "Total bugs: $TOTAL_BUGS"
+          echo "Total vulnerabilities: $TOTAL_VULNERABILITIES"
+          echo "Total code smells: $TOTAL_CODE_SMELLS"
+          echo "✅ Metrics saved to data/latest-metrics.json"
+          
+      - name: Commit and push changes
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add data/latest-metrics.json
+          git diff --quiet && git diff --staged --quiet || git commit -m "Update SonarQube metrics - $(date +'%Y-%m-%d %H:%M')"
+          git push
+
+  deploy:
+    needs: update-metrics
+    runs-on: ubuntu-latest
+    
+    permissions:
+      pages: write
+      id-token: write
+    
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v3

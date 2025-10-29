@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SonarQube Metrics Dashboard</title>
+    
+    <!-- External Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 SonarQube Metrics Dashboard</h1>
+            <p>Real-time code quality insights across all projects</p>
+        </div>
+
+        <div id="loading" class="loading">
+            Loading metrics data...
+        </div>
+
+        <div id="error" class="error" style="display: none;">
+            <strong>Error:</strong> <span id="error-message"></span>
+        </div>
+
+        <div id="content" style="display: none;">
+            <div class="last-updated">
+                Last updated: <span id="last-updated"></span>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <h3>Total Projects</h3>
+                    <div class="metric-value" id="total-projects">-</div>
+                </div>
+                <div class="metric-card">
+                    <h3>Global Coverage</h3>
+                    <div class="metric-value global-coverage" id="global-coverage">-</div>
+                </div>
+                <div class="metric-card">
+                    <h3>Average Coverage</h3>
+                    <div class="metric-value coverage" id="average-coverage">-</div>
+                </div>
+                <div class="metric-card">
+                    <h3>Total Vulnerabilities</h3>
+                    <div class="metric-value vulnerabilities" id="total-vulnerabilities">-</div>
+                </div>
+                <div class="metric-card">
+                    <h3>Total Bugs</h3>
+                    <div class="metric-value bugs" id="total-bugs">-</div>
+                </div>
+                <div class="metric-card">
+                    <h3>Code Smells</h3>
+                    <div class="metric-value code-smells" id="total-code-smells">-</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">Code Coverage Distribution</div>
+                <canvas id="coverageChart" width="400" height="200"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">Project Quality Overview</div>
+                <canvas id="qualityChart" width="400" height="200"></canvas>
+            </div>
+
+            <div class="project-table">
+                <div class="table-header">
+                    <h2>📊 Project Details</h2>
+                </div>
+                <div class="table-wrapper">
+                    <table id="projects-table">
+                        <thead>
+                            <tr>
+                                <th>Project</th>
+                                <th>Coverage</th>
+                                <th>Lines of Code</th>
+                                <th>Bugs</th>
+                                <th>Vulnerabilities</th>
+                                <th>Code Smells</th>
+                            </tr>
+                        </thead>
+                        <tbody id="projects-tbody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom JavaScript -->
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
