@@ -12,7 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <!-- Custom Styles -->
-    <link rel="stylesheet" href="{{ '/assets/css/dashboard.css' | relative_url }}">
+    <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
     
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ '/assets/images/favicon.ico' | relative_url }}">
@@ -29,16 +29,16 @@
 
     <!-- Custom JavaScript -->
     <script>
-        // Pass Jekyll variables to JavaScript
+        // Dashboard configuration
         window.dashboardConfig = {
-            refreshInterval: {{ site.dashboard.refresh_interval }},
+            refreshInterval: {{ site.dashboard.refresh_interval | default: 300000 }},
             colors: {
-                excellent: "{{ site.dashboard.chart_colors.excellent }}",
-                good: "{{ site.dashboard.chart_colors.good }}",
-                fair: "{{ site.dashboard.chart_colors.fair }}",
-                poor: "{{ site.dashboard.chart_colors.poor }}",
-                critical: "{{ site.dashboard.chart_colors.critical }}",
-                noData: "{{ site.dashboard.chart_colors.no_data }}"
+                excellent: '#4CAF50',
+                good: '#8BC34A',
+                fair: '#FFC107',
+                poor: '#FF9800',
+                critical: '#F44336',
+                noData: '#9E9E9E'
             },
             baseUrl: "{{ site.baseurl }}"
         };

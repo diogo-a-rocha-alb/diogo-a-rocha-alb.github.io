@@ -1,13 +1,10 @@
----
----
-
-// Jekyll SCSS Variables
+// SCSS Variables
 $primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-$excellent-color: {{ site.dashboard.chart_colors.excellent }};
-$good-color: {{ site.dashboard.chart_colors.good }};
-$fair-color: {{ site.dashboard.chart_colors.fair }};
-$poor-color: {{ site.dashboard.chart_colors.poor }};
-$critical-color: {{ site.dashboard.chart_colors.critical }};
+$excellent-color: #4CAF50;
+$good-color: #8BC34A;
+$fair-color: #FFC107;
+$poor-color: #FF9800;
+$critical-color: #F44336;
 
 // Base styles
 * {
