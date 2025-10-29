@@ -1,0 +1,52 @@
+# SonarQube Metrics Dashboard
+
+title: "SonarQube Metrics Dashboard"
+description: "Real-time code quality insights across all projects"
+url: "https://diogo-a-rocha-alb.github.io"
+baseurl: ""
+
+# Jekyll settings
+markdown: kramdown
+highlighter: rouge
+theme: minima
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+# Exclude files from processing
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
+  - .github/workflows/update-metrics.yml
+
+# Include hidden files
+include:
+  - .htaccess
+
+# Collections
+collections:
+  data:
+    output: false
+
+# Defaults
+defaults:
+  - scope:
+      path: ""
+      type: "pages"
+    values:
+      layout: "default"
+
+# Custom variables
+dashboard:
+  refresh_interval: 300000  # 5 minutes in milliseconds
+  chart_colors:
+    excellent: "#4CAF50"
+    good: "#8BC34A" 
+    fair: "#FFC107"
+    poor: "#FF9800"
+    critical: "#F44336"
+    no_data: "#9E9E9E"

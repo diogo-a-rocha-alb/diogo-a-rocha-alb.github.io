@@ -2,6 +2,20 @@
 let chartsInitialized = false;
 let coverageChart, qualityChart;
 
+// Configuration from Jekyll
+const config = window.dashboardConfig || {
+    refreshInterval: 300000,
+    colors: {
+        excellent: '#4CAF50',
+        good: '#8BC34A',
+        fair: '#FFC107',
+        poor: '#FF9800',
+        critical: '#F44336',
+        noData: '#9E9E9E'
+    },
+    baseUrl: ''
+};
+
 /**
  * Format numbers with K/M suffixes
  */
@@ -87,12 +101,12 @@ function initializeCharts(data) {
             datasets: [{
                 data: Object.values(coverageRanges),
                 backgroundColor: [
-                    '#4CAF50',
-                    '#8BC34A',
-                    '#FFC107',
-                    '#FF9800',
-                    '#F44336',
-                    '#9E9E9E'
+                    config.colors.excellent,
+                    config.colors.good,
+                    config.colors.fair,
+                    config.colors.poor,
+                    config.colors.critical,
+                    config.colors.noData
                 ],
                 borderWidth: 2,
                 borderColor: '#fff'
@@ -238,7 +252,7 @@ function showError(message) {
  */
 async function loadData() {
     try {
-        const response = await fetch('data/latest-metrics.json');
+        const response = await fetch(`${config.baseUrl}/data/latest-metrics.json`);
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
@@ -257,8 +271,8 @@ function initializeDashboard() {
     // Load initial data
     loadData();
     
-    // Set up auto-refresh every 5 minutes
-    setInterval(loadData, 5 * 60 * 1000);
+    // Set up auto-refresh using Jekyll config
+    setInterval(loadData, config.refreshInterval);
     
     console.log('🚀 SonarQube Metrics Dashboard initialized');
 }

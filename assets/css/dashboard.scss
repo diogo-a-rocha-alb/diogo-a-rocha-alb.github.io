@@ -1,3 +1,15 @@
+---
+---
+
+// Jekyll SCSS Variables
+$primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+$excellent-color: {{ site.dashboard.chart_colors.excellent }};
+$good-color: {{ site.dashboard.chart_colors.good }};
+$fair-color: {{ site.dashboard.chart_colors.fair }};
+$poor-color: {{ site.dashboard.chart_colors.poor }};
+$critical-color: {{ site.dashboard.chart_colors.critical }};
+
+// Base styles
 * {
     margin: 0;
     padding: 0;
@@ -6,7 +18,7 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: $primary-gradient;
     min-height: 100vh;
     color: #333;
 }
@@ -173,11 +185,11 @@ tr:hover {
     transition: width 0.3s ease;
 }
 
-.coverage-excellent { background: #4CAF50; }
-.coverage-good { background: #8BC34A; }
-.coverage-fair { background: #FFC107; }
-.coverage-poor { background: #FF9800; }
-.coverage-bad { background: #F44336; }
+.coverage-excellent { background: $excellent-color; }
+.coverage-good { background: $good-color; }
+.coverage-fair { background: $fair-color; }
+.coverage-poor { background: $poor-color; }
+.coverage-bad { background: $critical-color; }
 
 .loading {
     text-align: center;

@@ -1,4 +1,4 @@
-name: Update SonarQube Metrics Dashboard
+name: Update SonarQube Metrics
 
 on:
   schedule:
@@ -11,8 +11,6 @@ jobs:
     
     permissions:
       contents: write
-      pages: write
-      id-token: write
     
     steps:
       - name: Checkout repository
@@ -264,25 +262,3 @@ jobs:
           git add data/latest-metrics.json
           git diff --quiet && git diff --staged --quiet || git commit -m "Update SonarQube metrics - $(date +'%Y-%m-%d %H:%M')"
           git push
-          
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v2
-        with:
-          path: .
-
-  deploy:
-    needs: update-metrics
-    runs-on: ubuntu-latest
-    
-    permissions:
-      pages: write
-      id-token: write
-    
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v3

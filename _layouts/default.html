@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if page.title %}{{ page.title | escape }}{% else %}{{ site.title | escape }}{% endif %}</title>
+    
+    <!-- SEO and Meta Tags -->
+    {% seo %}
+    
+    <!-- External Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="{{ '/assets/css/dashboard.css' | relative_url }}">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ '/assets/images/favicon.ico' | relative_url }}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 {{ site.title }}</h1>
+            <p>{{ site.description }}</p>
+        </div>
+
+        {{ content }}
+    </div>
+
+    <!-- Custom JavaScript -->
+    <script>
+        // Pass Jekyll variables to JavaScript
+        window.dashboardConfig = {
+            refreshInterval: {{ site.dashboard.refresh_interval }},
+            colors: {
+                excellent: "{{ site.dashboard.chart_colors.excellent }}",
+                good: "{{ site.dashboard.chart_colors.good }}",
+                fair: "{{ site.dashboard.chart_colors.fair }}",
+                poor: "{{ site.dashboard.chart_colors.poor }}",
+                critical: "{{ site.dashboard.chart_colors.critical }}",
+                noData: "{{ site.dashboard.chart_colors.no_data }}"
+            },
+            baseUrl: "{{ site.baseurl }}"
+        };
+    </script>
+    <script src="{{ '/assets/js/dashboard.js' | relative_url }}"></script>
+</body>
+</html>
