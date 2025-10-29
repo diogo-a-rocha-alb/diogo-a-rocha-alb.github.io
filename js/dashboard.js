@@ -91,8 +91,11 @@ function initializeCharts(data) {
         background: '#faf9fc',
         tooltip: { y: { formatter: val => val + '%' } }
     };
-    coverageBarChart = new ApexCharts(document.querySelector("#coverage-bar-chart"), coverageOptions);
-    coverageBarChart.render();
+    const coverageEl = document.querySelector("#coverage-bar-chart");
+    if (coverageEl) {
+        coverageBarChart = new ApexCharts(coverageEl, coverageOptions);
+        coverageBarChart.render();
+    }
 
     // Vulnerabilities Bar Chart
     var vulnerabilitiesOptions = {
@@ -128,8 +131,11 @@ function initializeCharts(data) {
         background: '#faf9fc',
         tooltip: { y: { formatter: val => val } }
     };
-    vulnerabilitiesBarChart = new ApexCharts(document.querySelector("#vulnerabilities-bar-chart"), vulnerabilitiesOptions);
-    vulnerabilitiesBarChart.render();
+    const vulnEl = document.querySelector("#vulnerabilities-bar-chart");
+    if (vulnEl) {
+        vulnerabilitiesBarChart = new ApexCharts(vulnEl, vulnerabilitiesOptions);
+        vulnerabilitiesBarChart.render();
+    }
 
     chartsInitialized = true;
 }
