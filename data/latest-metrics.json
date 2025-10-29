@@ -1,54 +1,13 @@
 {
-  "timestamp": "2024-01-15T12:00:00Z",
+  "timestamp": "2025-10-29T16:37:11Z",
   "summary": {
-    "total_projects": 25,
-    "global_coverage": 78.5,
-    "average_coverage": 72.3,
-    "total_vulnerabilities": 12,
-    "total_bugs": 34,
-    "total_code_smells": 156,
-    "total_lines_of_code": 125000
+    "total_projects": 0,
+    "global_coverage": null,
+    "average_coverage": null,
+    "total_vulnerabilities": 0,
+    "total_bugs": 0,
+    "total_code_smells": 0,
+    "total_lines_of_code": 0
   },
-  "projects": [
-    {
-      "key": "project-alpha",
-      "coverage": 85.2,
-      "ncloc": 12500,
-      "bugs": 2,
-      "vulnerabilities": 0,
-      "code_smells": 8
-    },
-    {
-      "key": "project-beta",
-      "coverage": 92.1,
-      "ncloc": 8700,
-      "bugs": 1,
-      "vulnerabilities": 1,
-      "code_smells": 3
-    },
-    {
-      "key": "project-gamma",
-      "coverage": 67.8,
-      "ncloc": 15200,
-      "bugs": 5,
-      "vulnerabilities": 2,
-      "code_smells": 18
-    },
-    {
-      "key": "project-delta",
-      "coverage": 45.3,
-      "ncloc": 9800,
-      "bugs": 8,
-      "vulnerabilities": 3,
-      "code_smells": 25
-    },
-    {
-      "key": "project-epsilon",
-      "coverage": null,
-      "ncloc": 5600,
-      "bugs": 3,
-      "vulnerabilities": 1,
-      "code_smells": 12
-    }
-  ]
+  "projects": []
 }
