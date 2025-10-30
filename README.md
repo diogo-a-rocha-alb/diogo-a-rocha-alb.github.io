@@ -1,17 +1,18 @@
+
 # SonarQube Metrics Dashboard 📊
 
-An automated dashboard for visualizing SonarQube code quality metrics across multiple projects, built with **GitHub Pages** and **GitHub Actions only** (no Python dependencies required).
+> **Nota:** O workflow automático de atualização de métricas está temporariamente desativado devido a problemas de autenticação no SonarQube. Os dados apresentados no dashboard são estáticos e atualizados manualmente. Para atualizar as métricas, gere o ficheiro `latest-metrics.json` localmente e faça upload para a pasta `data/` deste repositório.
+
+Dashboard para visualização de métricas de qualidade de código do SonarQube em múltiplos projetos, construído com **GitHub Pages**. A atualização automática via **GitHub Actions** está em stand-by temporariamente.
+
 
 ## 🌟 Features
 
-- **Pure GitHub Actions**: No Python scripts needed - everything runs in the workflow
-- **Real-time Metrics**: Automatically fetches and displays SonarQube metrics using curl and jq
-- **Global Coverage**: Weighted global code coverage calculation across all projects
-- **Interactive Charts**: Visual representation of coverage distribution and quality metrics
-- **Project Details**: Sortable table with individual project metrics
-- **Responsive Design**: Works on desktop and mobile devices
-- **Auto-refresh**: Dashboard updates every 5 minutes
-- **Automated Updates**: GitHub Actions workflow runs daily at 7 AM UTC
+- **Atualização Manual Temporária**: Os dados são atualizados manualmente enquanto o workflow está desativado
+- **Visualização de Métricas**: Cobertura global, bugs, vulnerabilidades, code smells, linhas de código e mais
+- **Gráficos Interativos**: Visualização de distribuição de cobertura e qualidade
+- **Detalhes por Projeto**: Tabela ordenável com métricas individuais
+- **Design Responsivo**: Funciona em desktop e mobile
 
 ## 📈 Metrics Displayed
 
@@ -20,69 +21,29 @@ An automated dashboard for visualizing SonarQube code quality metrics across mul
 - **Size Metrics**: Total lines of code, number of projects
 - **Project Details**: Individual project breakdowns with visual coverage bars
 
-## 🚀 Setup Instructions
 
-### 1. Repository Secrets
+## 🚀 Como atualizar os dados manualmente
 
-Add the following secrets to your GitHub repository settings:
+1. Gere o ficheiro `latest-metrics.json` localmente (por exemplo, usando um script Python para converter os dados exportados do SonarQube)
+2. Faça upload/substitua o ficheiro em `data/latest-metrics.json` neste repositório
+3. Faça commit e push para o branch principal
+4. O dashboard será atualizado automaticamente com os novos dados
 
-- `SONAR_HOST_URL`: Your SonarQube server URL (e.g., `https://sonarqube.company.com`)
-- `SONAR_TOKEN`: Your SonarQube authentication token
+> Quando o problema de autenticação for resolvido, o workflow automático poderá ser reativado renomeando o ficheiro `.github/workflows.disabled/update-metrics.yml.disabled` para `.github/workflows/update-metrics.yml`.
 
-### 2. GitHub Pages
 
-1. Go to repository Settings → Pages
-2. Set Source to "Deploy from a branch"
-3. Select branch: `main` or `master`
-4. Select folder: `/ (root)`
-5. Save
+## 🔧 Configuração (workflow desativado)
 
-### 3. Enable Actions
-
-The workflow will automatically run daily at **7 AM UTC**, or you can trigger it manually:
-
-1. Go to Actions tab
-2. Select "Update SonarQube Metrics Dashboard"
-3. Click "Run workflow"
-
-## 🔧 Configuration
-
-### Update Frequency
-
-Modify the cron schedule in `.github/workflows/update-metrics.yml`:
-
-```yaml
-schedule:
-  - cron: '0 7 * * *'  # Daily at 7 AM UTC (current setting)
-  # - cron: '0 */6 * * *'  # Every 6 hours
-  # - cron: '0 9,17 * * 1-5'  # Twice daily on weekdays
-```
-
-### Project Filtering
-
-To filter projects by name, add a filter to the API call in the workflow:
-
-```bash
-# In the workflow file, modify the API call:
-"$SONAR_URL/api/projects/search?p=$PAGE&ps=500&q=your-filter-here"
-```
-
-### SSL Certificate Issues
-
-The workflow includes `--insecure` flag for curl commands to handle corporate SSL certificates. Remove this if not needed:
-
-```yaml
-# Remove --insecure from curl commands if SSL certificates are valid
-curl -s -u "$SONAR_TOKEN:" "$SONAR_URL/api/projects/search"
-```
+O workflow automático de atualização (`update-metrics.yml`) está desativado (ficheiro renomeado e movido para `.github/workflows.disabled/`).
+Quando reativado, siga as instruções antigas para configurar secrets e agendamento.
 
 ## 📁 File Structure
 
 ```
 ├── .github/workflows/
-│   └── update-metrics.yml    # GitHub Actions workflow (all logic here)
+│   └── workflows.disabled/update-metrics.yml.disabled    # Workflow desativado temporariamente
 ├── data/
-│   └── latest-metrics.json   # Generated metrics data (auto-created)
+│   └── latest-metrics.json   # Dados de métricas (atualizado manualmente)
 ├── index.html               # Dashboard frontend
 └── README.md               # This file
 ```
@@ -206,5 +167,5 @@ For issues and questions:
 
 **Dashboard URL**: https://diogo-a-rocha-alb.github.io
 
-*Last updated: Generated automatically by GitHub Actions at 7 AM UTC daily*
+*Last updated: Dados atualizados manualmente devido a problemas temporários de autenticação no SonarQube. Workflow automático desativado.*
 Repositorio de frontend de github page para disponibilizar metricas globais do sonarQube dos 110 repositorios da alticelabs
