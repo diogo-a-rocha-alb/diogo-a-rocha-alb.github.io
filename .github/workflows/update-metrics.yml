@@ -49,7 +49,7 @@ jobs:
             echo "📄 Fetching projects page $PAGE..."
             
             RESPONSE=$(curl -s -u "$SONAR_TOKEN:" \
-              "$SONAR_URL/api/projects/search?p=$PAGE&ps=500" \
+              "$SONAR_URL/api/projects/search?page=$PAGE&pageSize=500" \
               --insecure || echo '{"components":[]}')
             
             PROJECTS=$(echo "$RESPONSE" | jq -r '.components // []')
